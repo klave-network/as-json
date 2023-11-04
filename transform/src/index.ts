@@ -28,8 +28,8 @@ class AsJSONTransform extends BaseVisitor {
   public currentClass!: SchemaData;
   public sources = new Set<Source>();
 
-  visitMethodDeclaration(): void { }
-  visitClassDeclaration(node: ClassDeclaration): void {
+  override visitMethodDeclaration(): void { }
+  override visitClassDeclaration(node: ClassDeclaration): void {
     const className = node.name.text;
     if (!node.decorators?.length) return;
     let foundDecorator = false;
@@ -232,7 +232,7 @@ class AsJSONTransform extends BaseVisitor {
     //console.log(initializeFunc);
   }
 
-  visitSource(node: Source): void {
+  override visitSource(node: Source): void {
     super.visitSource(node);
 
     // Only add the import statement to sources that have JSON decorated classes.
@@ -265,7 +265,7 @@ function encodeKey(aliasName: string): string {
 
 export default class Transformer extends Transform {
   // Trigger the transform after parse.
-  afterParse(parser: Parser): void {
+  override afterParse(parser: Parser): void {
     // Create new transform
     const transformer = new AsJSONTransform();
 
