@@ -55,7 +55,7 @@ class JSONTransform extends BaseVisitor {
   filterMembers(members: DeclarationStatement[]): FieldDeclaration[] {
     return members.filter((v) => v instanceof FieldDeclaration && !v.decorators?.find((v) => (<IdentifierExpression>v.name).text == "omit")) as FieldDeclaration[];
   }
-  visitClassDeclaration(node: ClassDeclaration): void {
+  override visitClassDeclaration(node: ClassDeclaration): void {
     if (!node.decorators?.length) return;
     if (!node.decorators.find((v) => (<IdentifierExpression>v.name).text == "json" || (<IdentifierExpression>v.name).text == "serializable")) return;
     this.types = json_types;
@@ -315,7 +315,7 @@ class JSONTransform extends BaseVisitor {
 
     this.schemasList.push(schema);
   }
-  visitSource(node: Source): void {
+  override visitSource(node: Source): void {
     super.visitSource(node);
 
     // Only add the import statement to sources that have JSON decorated classes.
@@ -327,7 +327,7 @@ class JSONTransform extends BaseVisitor {
 
 export default class Transformer extends Transform {
   // Trigger the transform after parse.
-  afterParse(parser: Parser): void {
+  override afterParse(parser: Parser): void {
     // Create new transform
     const transformer = new JSONTransform();
 
@@ -367,7 +367,7 @@ export default class Transformer extends Transform {
 
 function checkInheritance(schema: SchemaData, schemas: SchemaData[]): void {
   if (!schema.parent && schema.node.extendsType) {
-    if (schemas.find(v => v.node.name.text === schema.node.extendsType?.name.identifier.text!)) return;
+    if (schemas.find((v) => v.node.name.text === schema.node.extendsType?.name.identifier.text!)) return;
     const extending = toString(schema.node.extendsType);
     logError(`Schema ${schema.name} extends ${extending}, but ${extending} does not include the @json decorator!`);
   }
@@ -375,7 +375,7 @@ function checkInheritance(schema: SchemaData, schemas: SchemaData[]): void {
 
 function checkTypeCorrectness(
   schema: SchemaData,
-  schemas: SchemaData[]
+  schemas: SchemaData[],
 ): {
   type: string;
   path: string;
@@ -413,7 +413,7 @@ function checkType(
   path: string;
 } | null {
   path += "." + member.name;
-  if (schemas.find(v => v.node.name.text === typ.name.identifier.text)) scopeTypes.add(typ.name.identifier.text);
+  if (schemas.find((v) => v.node.name.text === typ.name.identifier.text)) scopeTypes.add(typ.name.identifier.text);
   if (!scopeTypes.has(typ.name.identifier.text)) return { type: toString(typ), path };
 
   if (typ.isNullable && isPrimitive(typ)) return { type: toString(typ), path };

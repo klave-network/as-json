@@ -1,4 +1,4 @@
-import { JSON } from "."
+import { JSON } from ".";
 
 @json
 class Vec3<T> {
@@ -9,12 +9,12 @@ class Vec3<T> {
 
 @json
 class Base {
-  public bam: string = "harekogkeorgke"
+  public bam: string = "harekogkeorgke";
 }
 
 @json
 class Foo extends Base {
-  public bar: JSON.Raw = "\"this is ok\'"
+  public bar: JSON.Raw = "\"this is ok'";
   public baz: i32 = 0;
   public pos: Vec3<Vec3<i32>> = {
     x: 1,
@@ -22,9 +22,9 @@ class Foo extends Base {
     z: {
       x: 1,
       y: 2,
-      z: 3
-    }
-  }
+      z: 3,
+    },
+  };
   // ^ this is not okay
 }
 

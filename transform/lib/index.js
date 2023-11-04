@@ -364,7 +364,7 @@ export default class Transformer extends Transform {
 }
 function checkInheritance(schema, schemas) {
     if (!schema.parent && schema.node.extendsType) {
-        if (schemas.find(v => v.node.name.text === schema.node.extendsType?.name.identifier.text))
+        if (schemas.find((v) => v.node.name.text === schema.node.extendsType?.name.identifier.text))
             return;
         const extending = toString(schema.node.extendsType);
         logError(`Schema ${schema.name} extends ${extending}, but ${extending} does not include the @json decorator!`);
@@ -395,7 +395,7 @@ function checkTypeCorrectness(schema, schemas) {
 }
 function checkType(schema, schemas, typ, member, scopeTypes, path) {
     path += "." + member.name;
-    if (schemas.find(v => v.node.name.text === typ.name.identifier.text))
+    if (schemas.find((v) => v.node.name.text === typ.name.identifier.text))
         scopeTypes.add(typ.name.identifier.text);
     if (!scopeTypes.has(typ.name.identifier.text))
         return { type: toString(typ), path };
