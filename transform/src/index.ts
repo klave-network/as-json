@@ -22,7 +22,7 @@ class JSONTransform extends Visitor {
     simd: string[];
   } = { simd: [] };
 
-  visitClassDeclaration(node: ClassDeclaration): void {
+  override visitClassDeclaration(node: ClassDeclaration): void {
     if (!node.decorators?.length) return;
 
     if (
@@ -397,14 +397,14 @@ class JSONTransform extends Visitor {
   // visitBinaryExpression(node: BinaryExpression, ref?: Node | null): void {
   //   // if (node.right.kind == NodeKind.Call && (<CallExpression>node).)
   // }
-  visitImportStatement(node: ImportStatement): void {
+  override visitImportStatement(node: ImportStatement): void {
     super.visitImportStatement(node);
     const source = this.parser.sources.find((src) => src.internalPath == node.internalPath);
     if (!source) return;
 
     if (source.statements.some((stmt) => stmt.kind === NodeKind.NamespaceDeclaration && (stmt as NamespaceDeclaration).name.text === "JSON")) this.imports.push(node);
   }
-  visitSource(node: Source): void {
+  override visitSource(node: Source): void {
     this.imports = [];
     super.visitSource(node);
   }
@@ -483,7 +483,7 @@ class JSONTransform extends Visitor {
 
 export default class Transformer extends Transform {
   // Trigger the transform after parse.
-  afterParse(parser: Parser): void {
+  override afterParse(parser: Parser): void {
     // Create new transform
     const transformer = new JSONTransform();
 
