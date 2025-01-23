@@ -89,7 +89,7 @@ class JSONTransform extends Visitor {
               break;
             }
             case "omitif": {
-              let arg = decorator.args[0];
+              let arg = decorator.args?.[0] ?? null;
               if (!decorator.args?.length) throwError("@omitif must have an argument or callback that resolves to type bool", member.range);
               mem.flags.set(PropertyFlags.OmitIf, arg);
               this.schema.static = false;
@@ -139,6 +139,7 @@ class JSONTransform extends Visitor {
     let isFirst = true;
     for (let i = 0; i < this.schema.members.length; i++) {
       const member = this.schema.members[i];
+      if (!member) continue;
       const aliasName = JSON.stringify(member.alias || member.name);
       const realName = member.name;
       const isLast = i == this.schema.members.length - 1;
@@ -188,12 +189,13 @@ class JSONTransform extends Visitor {
           this.schema.byteSize += 2;
           SERIALIZE += indent + `}\n`;
         } else if (member.flags.has(PropertyFlags.OmitIf)) {
-          if (member.flags.get(PropertyFlags.OmitIf).kind == 14) {
-            const arg = member.flags.get(PropertyFlags.OmitIf);
+          const flagOmitIf = member.flags.get(PropertyFlags.OmitIf);
+          if (flagOmitIf?.kind == 14) {
+            const arg = flagOmitIf;
             arg.declaration.signature.returnType.name = Node.createSimpleTypeName("boolean", arg.declaration.signature.returnType.name.range);
-            SERIALIZE += indent + `if (!(${toString(member.flags.get(PropertyFlags.OmitIf))})(this)) {\n`;
-          } else {
-            SERIALIZE += indent + `if (${toString(member.flags.get(PropertyFlags.OmitIf))}) {\n`;
+            SERIALIZE += indent + `if (!(${toString(flagOmitIf)})(this)) {\n`;
+          } else if (flagOmitIf) {
+            SERIALIZE += indent + `if (${toString(flagOmitIf)}) {\n`;
           }
           indentInc();
           SERIALIZE += this.getStores(aliasName + ":")
@@ -218,7 +220,7 @@ class JSONTransform extends Visitor {
       .forEach((member) => {
         const _nameLength = member.alias?.length || member.name.length;
         if (_nameLength === len) {
-          sortedMembers[sortedMembers.length - 1].push(member);
+          sortedMembers[sortedMembers.length - 1]?.push(member);
         } else {
           sortedMembers.push([member]);
           len = _nameLength;
@@ -227,7 +229,7 @@ class JSONTransform extends Visitor {
     sortedMembers = sortedMembers.sort((a, b) => b.length - a.length);
     indentInc();
     for (const memberGroup of sortedMembers) {
-      const memberLen = (memberGroup[0].alias || memberGroup[0].name).length << 1;
+      const memberLen = ((memberGroup[0]?.alias || memberGroup[0]?.name)?.length ?? 0) << 1;
       DESERIALIZE += `${indent}case ${memberLen}: {\n`;
       indentInc();
       if (memberLen == 2) DESERIALIZE += `${indent}switch (load<u16>(keyStart)) {\n`;
@@ -236,6 +238,7 @@ class JSONTransform extends Visitor {
       else DESERIALIZE += toMemCDecl(memberLen, indent);
       for (let i = 0; i < memberGroup.length; i++) {
         const member = memberGroup[i];
+        if (!member) continue;
         const memberName = member.alias || member.name;
         if (memberLen == 2) {
           DESERIALIZE += `${indent}  case ${memberName.charCodeAt(0)}: { // ${memberName}\n`;
@@ -332,7 +335,7 @@ class JSONTransform extends Visitor {
     super.visitSource(node);
   }
   addRequiredImports(node) {
-    if (!this.imports.find((i) => i.declarations.find((d) => d.foreignName.text == "bs"))) {
+    if (!this.imports.find((i) => i.declarations?.find((d) => d.foreignName.text == "bs"))) {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       let relativePath = path.relative(path.dirname(node.range.source.normalizedPath), path.resolve(__dirname, "../../modules/as-bs/"));
@@ -343,7 +346,7 @@ class JSONTransform extends Visitor {
         if (process.env["JSON_DEBUG"]) console.log("Added as-bs import: " + txt + "\n");
       }
     }
-    if (!this.imports.find((i) => i.declarations.find((d) => d.foreignName.text == "JSON"))) {
+    if (!this.imports.find((i) => i.declarations?.find((d) => d.foreignName.text == "JSON"))) {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       let relativePath = path.relative(path.dirname(node.range.source.normalizedPath), path.resolve(__dirname, "../../assembly/index.ts"));
@@ -360,7 +363,7 @@ class JSONTransform extends Visitor {
     const sizes = strToNum(data, simd);
     let offset = 0;
     for (const [size, num] of sizes) {
-      if (size == "v128") {
+      if (size == "v128" && typeof num == "string") {
         let index = this.newStmts.simd.findIndex((v) => v.includes(num));
         let name = "SIMD_" + (index == -1 ? this.newStmts.simd.length : index);
         if (index && !this.newStmts.simd.includes(`const ${name} = ${num};`)) this.newStmts.simd.push(`const ${name} = ${num};`);
@@ -566,8 +569,5 @@ function sizeof(type) {
   else if (type == "i64") return 40;
   else if (type == "bool" || type == "boolean") return 10;
   else return 0;
-}
-function allPrimitive(schema) {
-  return !schema.members.some((p) => p.byteSize == 0);
 }
 //# sourceMappingURL=index.js.map
