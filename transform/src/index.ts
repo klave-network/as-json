@@ -425,6 +425,7 @@ class JSONTransform extends Visitor {
       let relativePath = path.relative(path.dirname(node.range.source.normalizedPath), path.resolve(__dirname, "../../modules/as-bs/"));
 
       if (!relativePath.startsWith(".") && !relativePath.startsWith("/")) relativePath = "./" + relativePath;
+      relativePath = relativePath.replace(/\\/g, "/");
       // if (!existsSync(relativePath)) {
       //   throw new Error("Could not find a valid json-as library to import from! Please add import { JSON } from \"path-to-json-as\"; in " + node.range.source.normalizedPath + "!");
       // }
@@ -443,6 +444,7 @@ class JSONTransform extends Visitor {
       let relativePath = path.relative(path.dirname(node.range.source.normalizedPath), path.resolve(__dirname, "../../assembly/index.ts"));
 
       if (!relativePath.startsWith(".") && !relativePath.startsWith("/")) relativePath = "./" + relativePath;
+      relativePath = relativePath.replace(/\\/g, "/");
       // if (!existsSync(relativePath)) {
       //   throw new Error("Could not find a valid json-as library to import from! Please add import { JSON } from \"path-to-json-as\"; in " + node.range.source.normalizedPath + "!");
       // }

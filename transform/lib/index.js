@@ -340,6 +340,7 @@ class JSONTransform extends Visitor {
       const __dirname = path.dirname(__filename);
       let relativePath = path.relative(path.dirname(node.range.source.normalizedPath), path.resolve(__dirname, "../../modules/as-bs/"));
       if (!relativePath.startsWith(".") && !relativePath.startsWith("/")) relativePath = "./" + relativePath;
+      relativePath = relativePath.replace(/\\/g, "/");
       const txt = `import { bs } from "${relativePath}";`;
       if (!this.bsImport) {
         this.bsImport = txt;
@@ -351,6 +352,7 @@ class JSONTransform extends Visitor {
       const __dirname = path.dirname(__filename);
       let relativePath = path.relative(path.dirname(node.range.source.normalizedPath), path.resolve(__dirname, "../../assembly/index.ts"));
       if (!relativePath.startsWith(".") && !relativePath.startsWith("/")) relativePath = "./" + relativePath;
+      relativePath = relativePath.replace(/\\/g, "/");
       const txt = `import { JSON } from "${relativePath}";`;
       if (!this.jsonImport) {
         this.jsonImport = txt;
